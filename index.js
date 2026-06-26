@@ -34,16 +34,18 @@ async function run() {
     
     const cattleCollection = database.collection("cattles");
     const userCollection = database.collection("users");
-    // নতুন কালেকশন সমূহ
     const saleCollection = database.collection("sales");
     const expenseCollection = database.collection("expenses");
     const incomeCollection = database.collection("incomes");
     const milkCollection = database.collection("milk_logs");
+    
+    // ── নতুন কালেকশন সমূহ (খাবার ও গুদাম) ──
+    const inventoryCollection = database.collection("inventory");
+    const feedLogCollection = database.collection("feed_logs");
 
     // ==========================================
     //         গরুর (Cattle) API সমূহ
     // ==========================================
-
     app.get('/cattles', async (req, res) => {
       const result = await cattleCollection.find().toArray();
       res.send(result);
@@ -55,11 +57,10 @@ async function run() {
       res.send(result);
     });
 
-    // নতুন: গরুর তথ্য (ওজন, টিকা, প্রজনন, স্ট্যাটাস) আপডেট করার API
     app.patch('/cattles/:id', async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
-      delete updatedData._id; // MongoDB তে _id আপডেট করা যায় না
+      delete updatedData._id; 
 
       const query = { _id: new ObjectId(id) };
       const updateDoc = { $set: updatedData };
@@ -94,7 +95,7 @@ async function run() {
     });
 
     // ==========================================
-    //      খরচ ও আয় (Expenses & Incomes) API
+    //      খরচ ও আয় (Expenses & Incomes) API
     // ==========================================
     app.get('/expenses', async (req, res) => res.send(await expenseCollection.find().toArray()));
     app.post('/expenses', async (req, res) => res.send(await expenseCollection.insertOne(req.body)));
@@ -112,7 +113,31 @@ async function run() {
     app.delete('/milk_logs/:id', async (req, res) => res.send(await milkCollection.deleteOne({ _id: new ObjectId(req.params.id) })));
 
     // ==========================================
-    //      ব্যবহারকারী (Users) API সমূহ
+    // ── খাদ্য গুদাম (Inventory) API সমূহ ──
+    // ==========================================
+    app.get('/inventory', async (req, res) => res.send(await inventoryCollection.find().toArray()));
+    
+    app.post('/inventory', async (req, res) => res.send(await inventoryCollection.insertOne(req.body)));
+    
+    app.patch('/inventory/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      delete updatedData._id;
+      const result = await inventoryCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
+      res.send(result);
+    });
+
+    app.delete('/inventory/:id', async (req, res) => res.send(await inventoryCollection.deleteOne({ _id: new ObjectId(req.params.id) })));
+
+    // ==========================================
+    // ── খাবারের দৈনিক হিসাব (Feed Logs) API ──
+    // ==========================================
+    app.get('/feed_logs', async (req, res) => res.send(await feedLogCollection.find().toArray()));
+    app.post('/feed_logs', async (req, res) => res.send(await feedLogCollection.insertOne(req.body)));
+    app.delete('/feed_logs/:id', async (req, res) => res.send(await feedLogCollection.deleteOne({ _id: new ObjectId(req.params.id) })));
+
+    // ==========================================
+    //         ব্যবহারকারী (Users) API সমূহ
     // ==========================================
     app.get('/users', async (req, res) => {
       const result = await userCollection.find().toArray();

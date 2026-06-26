@@ -38,8 +38,6 @@ async function run() {
     const expenseCollection = database.collection("expenses");
     const incomeCollection = database.collection("incomes");
     const milkCollection = database.collection("milk_logs");
-    
-    // ── নতুন কালেকশন সমূহ (খাবার ও গুদাম) ──
     const inventoryCollection = database.collection("inventory");
     const feedLogCollection = database.collection("feed_logs");
 
@@ -98,11 +96,33 @@ async function run() {
     //      খরচ ও আয় (Expenses & Incomes) API
     // ==========================================
     app.get('/expenses', async (req, res) => res.send(await expenseCollection.find().toArray()));
+    
     app.post('/expenses', async (req, res) => res.send(await expenseCollection.insertOne(req.body)));
+    
+    // ── খরচের ডাটা এডিট (Update) করার API ──
+    app.patch('/expenses/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      delete updatedData._id; 
+      const result = await expenseCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
+      res.send(result);
+    });
+
     app.delete('/expenses/:id', async (req, res) => res.send(await expenseCollection.deleteOne({ _id: new ObjectId(req.params.id) })));
 
     app.get('/incomes', async (req, res) => res.send(await incomeCollection.find().toArray()));
+    
     app.post('/incomes', async (req, res) => res.send(await incomeCollection.insertOne(req.body)));
+    
+    // ── আয়ের ডাটা এডিট (Update) করার API ──
+    app.patch('/incomes/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      delete updatedData._id; 
+      const result = await incomeCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
+      res.send(result);
+    });
+
     app.delete('/incomes/:id', async (req, res) => res.send(await incomeCollection.deleteOne({ _id: new ObjectId(req.params.id) })));
 
     // ==========================================
